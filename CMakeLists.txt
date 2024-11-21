@@ -1,7 +1,10 @@
-cmake_minimum_required(VERSION 3.5.0)
+cmake_minimum_required(VERSION 3.10)
 project(concatenador VERSION 0.1.0 LANGUAGES C CXX)
 
 add_executable(concatenador main.cpp)
+
+find_package(boost_program_options REQUIRED CONFIG)
+target_link_libraries(${PROJECT_NAME} PRIVATE Boost::program_options)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
