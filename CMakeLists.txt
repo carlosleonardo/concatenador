@@ -6,7 +6,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_executable(concatenador main.cpp)
 
 find_package(boost_program_options REQUIRED CONFIG)
-target_link_libraries(${PROJECT_NAME} PRIVATE Boost::program_options)
+find_package(fmt CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE Boost::program_options fmt::fmt)
+
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
