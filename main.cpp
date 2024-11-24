@@ -57,6 +57,11 @@ int main(int argc, char **argv)
         {
             const auto arquivoDestino = vm["arquivo-destino"].as<std::string>();
             std::ofstream arqDestino(arquivoDestino);
+            if (!arqDestino.is_open())
+            {
+                fmt::print("Não foi possível abrir o arquivo de destino.\n");
+                return -3;
+            }
             for (const auto &arquivo : arquivosOrigem)
             {
                 std::ifstream arquivoOrigem(arquivo);
