@@ -9,7 +9,8 @@ find_package(boost_program_options REQUIRED CONFIG)
 find_package(fmt CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE Boost::program_options fmt::fmt)
 
-
+include(InstallRequiredSystemLibraries)
+install(TARGETS concatenador DESTINATION bin)
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
 include(CPack)
