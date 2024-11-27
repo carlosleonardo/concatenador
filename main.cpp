@@ -67,7 +67,7 @@ bool verificarTamanhoComando(int argc, char **argv)
 {
 #ifdef _WIN32
     const size_t tamanhoMaximo = 32767;
-#elif defined(__linux__)
+#elif defined(__linux__) || defined(__APPLE__)
 
 #endif
     std::string comando = "";
