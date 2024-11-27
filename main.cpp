@@ -63,6 +63,30 @@ int copiarArquivos(const std::vector<std::string> &arquivosOrigem, const std::st
     return 0;
 }
 
+bool verificarTamanhoComando(int argc, char **argv)
+{
+#ifdef _WIN32
+    const size_t tamanhoMaximo = 32767;
+#elif defined(__linux__)
+
+#endif
+    std::string comando = "";
+
+    for (int i = 0; i < argc; i++)
+    {
+        comando += argv[i];
+        if (i < argc - 1)
+        {
+            comando += " ";
+        }
+    }
+    if (comando.size() > tamanhoMaximo)
+    {
+        return false;
+    }
+    return true;
+}
+
 int main(int argc, char **argv)
 {
     po::options_description desc("Opções permitidas");
@@ -70,6 +94,11 @@ int main(int argc, char **argv)
     desc.add_options()("arquivos-origem,O", po::value<std::vector<std::string>>()->multitoken(), "Arquivos texto de origem");
     desc.add_options()("arquivo-destino,D", po::value<std::string>(), "Arquivo texto de destino");
 
+    if (verificarTamanhoComando(argc, argv) == false)
+    {
+        fmt::print("Comando excede o máximo na linha.\n");
+        return -6;
+    }
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
     po::notify(vm);
