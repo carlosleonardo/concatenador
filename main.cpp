@@ -19,11 +19,48 @@ bool verificarExistencia(const std::vector<std::string> &arquivos)
         fmt::print("Verificando existência do arquivo {}\n", arquivo);
         if (!arquivoValido(arquivo))
         {
-            fmt::print("Arquivo {} não existe ou inválido.\n", arquivo);
+            fmt::print("Arquivo {} não existe ou é inválido.\n", arquivo);
             return false;
         }
     }
     return true;
+}
+
+int copiarArquivos(const std::vector<std::string> &arquivosOrigem, const std::string &arquivoDestino)
+{
+    std::ofstream arqDestino(arquivoDestino);
+    if (!arqDestino.is_open())
+    {
+        fmt::print("Não foi possível abrir o arquivo de destino {} para gravação.\n", arquivoDestino);
+        return -3;
+    }
+    for (const auto &arquivo : arquivosOrigem)
+    {
+        std::ifstream arquivoOrigem(arquivo);
+        if (!arquivoOrigem.is_open())
+        {
+            fmt::print("Não foi possível abrir o arquivo de origem {}.\n", arquivo);
+            return -4;
+        }
+        try
+        {
+            std::string linha;
+            // Copia o conteúdo do arquivo de origem para o arquivo de destino
+            arqDestino.exceptions(std::ofstream::failbit | std::ofstream::badbit);
+            while (std::getline(arquivoOrigem, linha))
+            {
+                arqDestino << linha << std::endl;
+            }
+        }
+        catch (const std::exception &e)
+        {
+            arquivoOrigem.close();
+            arqDestino.close();
+            fmt::print("Erro ao copiar o arquivo {}: {}\n", arquivo, e.what());
+            return -5;
+        }
+    }
+    return 0;
 }
 
 int main(int argc, char **argv)
@@ -56,38 +93,7 @@ int main(int argc, char **argv)
         if (vm.count("arquivo-destino"))
         {
             const auto arquivoDestino = vm["arquivo-destino"].as<std::string>();
-            std::ofstream arqDestino(arquivoDestino);
-            if (!arqDestino.is_open())
-            {
-                fmt::print("Não foi possível abrir o arquivo de destino {} para gravação.\n", arquivoDestino);
-                return -3;
-            }
-            for (const auto &arquivo : arquivosOrigem)
-            {
-                std::ifstream arquivoOrigem(arquivo);
-                if (!arquivoOrigem.is_open())
-                {
-                    fmt::print("Não foi possível abrir o arquivo de origem {}.\n", arquivo);
-                    return -4;
-                }
-                try
-                {
-                    std::string linha;
-                    // Copia o conteúdo do arquivo de origem para o arquivo de destino
-                    arqDestino.exceptions(std::ofstream::failbit | std::ofstream::badbit);
-                    while (std::getline(arquivoOrigem, linha))
-                    {
-                        arqDestino << linha << std::endl;
-                    }
-                }
-                catch (const std::exception &e)
-                {
-                    arquivoOrigem.close();
-                    arqDestino.close();
-                    fmt::print("Erro ao copiar o arquivo {}: {}\n", arquivo, e.what());
-                    return -5;
-                }
-            }
+            return copiarArquivos(arquivosOrigem, arquivoDestino);
         }
         else
         {
