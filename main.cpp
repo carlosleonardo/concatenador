@@ -3,6 +3,9 @@
 #include <boost/program_options.hpp>
 #include <string>
 #include <fstream>
+#if defined(__linux__) || defined(__APPLE__)
+#include <unistd.h>
+#endif
 
 namespace po = boost::program_options;
 
@@ -68,7 +71,14 @@ bool verificarTamanhoComando(int argc, char **argv)
 #ifdef _WIN32
     const size_t tamanhoMaximo = 32767;
 #elif defined(__linux__) || defined(__APPLE__)
-
+    const size_t maxArg = sysconf(_SC_ARG_MAX);
+    if (maxArg == -1)
+    {
+        return false;
+    }
+    size_t tamanhoMaximo = maxArg - 1024;
+#else
+    return false;
 #endif
     std::string comando = "";
 
