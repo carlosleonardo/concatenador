@@ -17,16 +17,14 @@ bool arquivoValido(const std::string &filename)
 
 bool verificarExistencia(const std::vector<std::string> &arquivos)
 {
-    for (const auto &arquivo : arquivos)
-    {
-        fmt::print("Verificando existência do arquivo {}\n", arquivo);
-        if (!arquivoValido(arquivo))
-        {
+    return std::all_of(arquivos.begin(), arquivos.end(), [](const std::string &arquivo)
+                       {
+        fmt::print("Verificando existência de arquivo {}\n", arquivo);                        
+        if(!arquivoValido(arquivo)) {
             fmt::print("Arquivo {} não existe ou é inválido.\n", arquivo);
             return false;
         }
-    }
-    return true;
+        return true; });
 }
 
 int copiarArquivos(const std::vector<std::string> &arquivosOrigem, const std::string &arquivoDestino)
