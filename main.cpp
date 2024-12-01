@@ -9,12 +9,18 @@
 
 namespace po = boost::program_options;
 
+/// @brief Verifica se o arquivo é válido e existe
+/// @param filename nome do arquivo
+/// @return true se o arquivo é válido e existe
 bool arquivoValido(const std::string &filename)
 {
     std::ifstream f(filename.c_str());
     return f.good();
 }
 
+/// @brief Verifica se o arquivo é válido e existe
+/// @param arquivos vetor de arquivos
+/// @return true se todos os arquivos são válidos e existem
 bool verificarExistencia(const std::vector<std::string> &arquivos)
 {
     return std::all_of(arquivos.begin(), arquivos.end(), [](const std::string &arquivo)
@@ -27,6 +33,10 @@ bool verificarExistencia(const std::vector<std::string> &arquivos)
         return true; });
 }
 
+/// @brief Copia os arquivos de origem para o arquivo de destino
+/// @param arquivosOrigem vetor de arquivos de origem
+/// @param arquivoDestino arquivo de destino
+/// @return
 int copiarArquivos(const std::vector<std::string> &arquivosOrigem, const std::string &arquivoDestino)
 {
     std::ofstream arqDestino(arquivoDestino);
@@ -64,6 +74,10 @@ int copiarArquivos(const std::vector<std::string> &arquivosOrigem, const std::st
     return 0;
 }
 
+/// @brief Verifica se o tamanho do comando é válido
+/// @param argc contagem de argumentos
+/// @param argv array de argumentos
+/// @return false se o tamanho do comando é inválido ou não for suportado pelo sistema operacional
 bool verificarTamanhoComando(int argc, char **argv)
 {
 #ifdef _WIN32
