@@ -3,6 +3,8 @@
 #include <boost/program_options.hpp>
 #include <string>
 #include <fstream>
+#include <regex>
+#include <filesystem>
 #if defined(__linux__) || defined(__APPLE__)
 #include <unistd.h>
 #endif
@@ -109,6 +111,23 @@ bool verificarTamanhoComando(int argc, char **argv)
     return true;
 }
 
+std::vector<std::string> obterArquivosDaMascara(const std::string &mascara)
+{
+    std::vector<std::string> arquivos;
+    const auto caminho = std::filesystem::path(mascara);
+    const auto diretorio = caminho.has_parent_path() ? caminho.parent_path() : std::filesystem::current_path();
+
+    // Extrai todos os arquivos da pasta que combinam com a máscara
+    for (const auto &arquivo : std::filesystem::directory_iterator(diretorio))
+    {
+        if (std::regex_match(arquivo.path().filename().string(), std::regex(mascara)))
+        {
+            arquivos.push_back(arquivo.path().string());
+        }
+    }
+    return arquivos;
+}
+
 int main(int argc, char **argv)
 {
     po::options_description desc("Opções permitidas");
@@ -134,6 +153,7 @@ int main(int argc, char **argv)
     }
     if (vm.count("arquivos-origem"))
     {
+        // Obtém os arquivos de origem
         const auto arquivosOrigem = vm["arquivos-origem"].as<std::vector<std::string>>();
 
         // Verifica se os arquivos existem
