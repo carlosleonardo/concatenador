@@ -154,12 +154,26 @@ int main(int argc, char **argv)
     if (vm.count("arquivos-origem"))
     {
         // Obtém os arquivos de origem
-        const auto arquivosOrigem = vm["arquivos-origem"].as<std::vector<std::string>>();
-
-        // Verifica se os arquivos existem
-        if (!verificarExistencia(arquivosOrigem))
+        auto arquivosOrigem = vm["arquivos-origem"].as<std::vector<std::string>>();
+        if (arquivosOrigem.size() >= 1)
         {
-            return -1;
+            if (!verificarExistencia(arquivosOrigem))
+            {
+                return -1;
+            }
+        }
+        else if (arquivosOrigem.size() == 0)
+        {
+            fmt::print("Nenhum arquivo de origem foi especificado.\n");
+            return -7;
+        }
+        else
+        {
+            arquivosOrigem = obterArquivosDaMascara(arquivosOrigem[0]);
+            if (!verificarExistencia(arquivosOrigem))
+            {
+                return -1;
+            }
         }
         if (vm.count("arquivo-destino"))
         {
