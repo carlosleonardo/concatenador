@@ -117,10 +117,10 @@ std::vector<std::string> obterArquivosDaMascara(const std::string &mascara)
     const auto caminho = std::filesystem::path(mascara);
     const auto diretorio = caminho.has_parent_path() ? caminho.parent_path() : std::filesystem::current_path();
 
-    std::string padrao = mascara;
-    padrao = std::regex_replace(padrao, std::regex("\\*"), ".*");
-    padrao = std::regex_replace(padrao, std::regex("\\?"), ".");
-    padrao = std::regex_replace(padrao, std::regex("\\."), "\\.");
+    std::string padrao = caminho.filename().string();
+    padrao = "^" + std::regex_replace(padrao, std::regex("\\*"), ".*");
+    padrao = std::regex_replace(padrao, std::regex("\\?"), ".") + "$";
+    // fmt::print("Padrão: {}\n", padrao);
 
     // Extrai todos os arquivos da pasta que combinam com a máscara
     for (const auto &arquivo : std::filesystem::directory_iterator(diretorio))
@@ -130,7 +130,7 @@ std::vector<std::string> obterArquivosDaMascara(const std::string &mascara)
         if (arquivo.is_regular_file())
             if (std::regex_match(arquivo.path().filename().string(), std::regex(padrao)))
             {
-                fmt::print("Arquivo {} é válido\n", arquivo.path().string());
+                // fmt::print("Arquivo {} é válido\n", arquivo.path().string());
                 arquivos.push_back(arquivo.path().string());
             }
     }
@@ -200,7 +200,7 @@ int main(int argc, char **argv)
             if (vm.count("arquivo-destino"))
             {
                 const auto arquivoDestino = vm["arquivo-destino"].as<std::string>();
-                return copiarArquivos(arquivosOrigem, arquivoDestino);
+                return copiarArquivos(arquivosFinal, arquivoDestino);
             }
             else
             {
