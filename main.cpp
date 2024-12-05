@@ -113,17 +113,26 @@ bool verificarTamanhoComando(int argc, char **argv)
 
 std::vector<std::string> obterArquivosDaMascara(const std::string &mascara)
 {
-    std::vector<std::string> arquivos;
+    std::vector<std::string> arquivos{};
     const auto caminho = std::filesystem::path(mascara);
     const auto diretorio = caminho.has_parent_path() ? caminho.parent_path() : std::filesystem::current_path();
+
+    std::string padrao = mascara;
+    padrao = std::regex_replace(padrao, std::regex("\\*"), ".*");
+    padrao = std::regex_replace(padrao, std::regex("\\?"), ".");
+    padrao = std::regex_replace(padrao, std::regex("\\."), "\\.");
 
     // Extrai todos os arquivos da pasta que combinam com a máscara
     for (const auto &arquivo : std::filesystem::directory_iterator(diretorio))
     {
-        if (std::regex_match(arquivo.path().filename().string(), std::regex(mascara)))
-        {
-            arquivos.push_back(arquivo.path().string());
-        }
+        // Verifica se o arquivo é um arquivo regular e se o nome do arquivo combina com a máscara
+        // fmt::print("Verificando arquivo {}\n", arquivo.path().string());
+        if (arquivo.is_regular_file())
+            if (std::regex_match(arquivo.path().filename().string(), std::regex(padrao)))
+            {
+                fmt::print("Arquivo {} é válido\n", arquivo.path().string());
+                arquivos.push_back(arquivo.path().string());
+            }
     }
     return arquivos;
 }
@@ -140,51 +149,75 @@ int main(int argc, char **argv)
         fmt::print("Comando excede o máximo na linha.\n");
         return -6;
     }
-    po::variables_map vm;
-    po::store(po::parse_command_line(argc, argv, desc), vm);
-    po::notify(vm);
+    try
+    {
 
-    if (vm.count("ajuda") || vm.empty())
-    {
-        std::ostringstream os;
-        os << desc;
-        fmt::print("{}\n", os.str());
-        return 0;
+        po::variables_map vm;
+        po::store(po::parse_command_line(argc, argv, desc), vm);
+        po::notify(vm);
+
+        if (vm.count("ajuda") || vm.empty())
+        {
+            std::ostringstream os;
+            os << desc;
+            fmt::print("{}\n", os.str());
+            return 0;
+        }
+        if (vm.count("arquivos-origem"))
+        {
+            // Obtém os arquivos de origem
+            auto arquivosOrigem = vm["arquivos-origem"].as<std::vector<std::string>>();
+            std::vector<std::string> arquivosFinal;
+
+            // Process each input argument - could be a wildcard or regular file
+            for (const auto &entrada : arquivosOrigem)
+            {
+                auto arquivosFiltrados = obterArquivosDaMascara(entrada);
+                if (!arquivosFiltrados.empty())
+                {
+                    // If wildcard matched files, add them
+                    arquivosFinal.insert(arquivosFinal.end(),
+                                         arquivosFiltrados.begin(),
+                                         arquivosFiltrados.end());
+                }
+                else if (arquivoValido(entrada))
+                {
+                    // If it's a regular file that exists, add it
+                    arquivosFinal.push_back(entrada);
+                }
+            }
+
+            if (arquivosFinal.empty())
+            {
+                fmt::print("Nenhum arquivo válido encontrado nos argumentos fornecidos.\n");
+                return -7;
+            }
+
+            if (!verificarExistencia(arquivosFinal))
+            {
+                return -1;
+            }
+            if (vm.count("arquivo-destino"))
+            {
+                const auto arquivoDestino = vm["arquivo-destino"].as<std::string>();
+                return copiarArquivos(arquivosOrigem, arquivoDestino);
+            }
+            else
+            {
+                fmt::print("Nenhum arquivo de destino foi especificado.\n");
+                return -2;
+            }
+        }
     }
-    if (vm.count("arquivos-origem"))
+    catch (const std::exception &e)
     {
-        // Obtém os arquivos de origem
-        auto arquivosOrigem = vm["arquivos-origem"].as<std::vector<std::string>>();
-        if (arquivosOrigem.size() >= 1)
-        {
-            if (!verificarExistencia(arquivosOrigem))
-            {
-                return -1;
-            }
-        }
-        else if (arquivosOrigem.size() == 0)
-        {
-            fmt::print("Nenhum arquivo de origem foi especificado.\n");
-            return -7;
-        }
-        else
-        {
-            arquivosOrigem = obterArquivosDaMascara(arquivosOrigem[0]);
-            if (!verificarExistencia(arquivosOrigem))
-            {
-                return -1;
-            }
-        }
-        if (vm.count("arquivo-destino"))
-        {
-            const auto arquivoDestino = vm["arquivo-destino"].as<std::string>();
-            return copiarArquivos(arquivosOrigem, arquivoDestino);
-        }
-        else
-        {
-            fmt::print("Nenhum arquivo de destino foi especificado.\n");
-            return -2;
-        }
+        fmt::print("Erro ao executar o programa: {}\n", e.what());
+        return -1;
+    }
+    catch (...)
+    {
+        fmt::print("Erro desconhecido ao executar o programa.\n");
+        return -1;
     }
 
     return 0;
