@@ -12,6 +12,7 @@ _deps
 CMakeUserPresets.json
 
 build/
+cmake-build*/
 .vscode/
 # Prerequisites
 *.d
