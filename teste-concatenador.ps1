@@ -1,5 +1,5 @@
 # Define o comando para teste
-$command = ".\build\concatenador"
+$command = ".\cmake-build-debug\concatenador"
 
 # Define o tamanho máximo inicial
 $maxLength = 32767  # Valor inicial, considerando o limite do Windows
