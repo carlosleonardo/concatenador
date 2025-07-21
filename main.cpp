@@ -25,8 +25,8 @@ bool arquivoValido(const std::string &filename)
 /// @return true se todos os arquivos são válidos e existem
 bool verificarExistencia(const std::vector<std::string> &arquivos)
 {
-    return std::all_of(arquivos.begin(), arquivos.end(), [](const std::string &arquivo)
-                       {
+    return std::ranges::all_of(arquivos, [](const std::string &arquivo)
+    {
         fmt::print("Verificando existência de arquivo {}\n", arquivo);                        
         if(!arquivoValido(arquivo)) {
             fmt::print("Arquivo {} não existe ou é inválido.\n", arquivo);
@@ -83,7 +83,7 @@ int copiarArquivos(const std::vector<std::string> &arquivosOrigem, const std::st
 bool verificarTamanhoComando(int argc, char **argv)
 {
 #ifdef _WIN32
-    const size_t tamanhoMaximo = 32767;
+    constexpr size_t tamanhoMaximo = 32767;
 #elif defined(__linux__) || defined(__APPLE__)
     const size_t maxArg = sysconf(_SC_ARG_MAX);
     if (maxArg == -1)
@@ -156,14 +156,14 @@ int main(int argc, char **argv)
         po::store(po::parse_command_line(argc, argv, desc), vm);
         po::notify(vm);
 
-        if (vm.count("ajuda") || vm.empty())
+        if (vm.contains("ajuda") || vm.empty())
         {
             std::ostringstream os;
             os << desc;
             fmt::print("{}\n", os.str());
             return 0;
         }
-        if (vm.count("arquivos-origem"))
+        if (vm.contains("arquivos-origem"))
         {
             // Obtém os arquivos de origem
             auto arquivosOrigem = vm["arquivos-origem"].as<std::vector<std::string>>();
@@ -172,8 +172,7 @@ int main(int argc, char **argv)
             // Process each input argument - could be a wildcard or regular file
             for (const auto &entrada : arquivosOrigem)
             {
-                auto arquivosFiltrados = obterArquivosDaMascara(entrada);
-                if (!arquivosFiltrados.empty())
+                if (auto arquivosFiltrados = obterArquivosDaMascara(entrada); !arquivosFiltrados.empty())
                 {
                     // If wildcard matched files, add them
                     arquivosFinal.insert(arquivosFinal.end(),
@@ -197,7 +196,7 @@ int main(int argc, char **argv)
             {
                 return -1;
             }
-            if (vm.count("arquivo-destino"))
+            if (vm.contains("arquivo-destino"))
             {
                 const auto arquivoDestino = vm["arquivo-destino"].as<std::string>();
                 return copiarArquivos(arquivosFinal, arquivoDestino);
