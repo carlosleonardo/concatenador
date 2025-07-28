@@ -26,7 +26,7 @@ bool arquivoValido(const std::string &filename)
 bool verificarExistencia(const std::vector<std::string> &arquivos)
 {
     return std::ranges::all_of(arquivos, [](const std::string &arquivo)
-    {
+                               {
         fmt::print("Verificando existência de arquivo {}\n", arquivo);                        
         if(!arquivoValido(arquivo)) {
             fmt::print("Arquivo {} não existe ou é inválido.\n", arquivo);
@@ -85,7 +85,7 @@ bool verificarTamanhoComando(int argc, char **argv)
 #ifdef _WIN32
     constexpr size_t tamanhoMaximo = 32767;
 #elif defined(__linux__) || defined(__APPLE__)
-    const size_t maxArg = sysconf(_SC_ARG_MAX);
+    constexpr size_t maxArg = sysconf(_SC_ARG_MAX);
     if (maxArg == -1)
     {
         return false;
